@@ -16,7 +16,7 @@
         </style>
     </head>
     <body>
-        <h4>ImagingStudy for ID: 3204399</h4>
+        <h4>ImagingStudy for ID: 3204683</h4>
         <div id="imagingstudy">Loading...</div>
         <br/>
         <h4>Current Patient</h4>
@@ -27,7 +27,7 @@
         <script type="text/javascript">
             FHIR.oauth2.ready().then(function(client) {
                 
-                let specificImagingStudyId = "3204399";
+                let specificImagingStudyId = "3204683";
                 // Get ImagingStudy for the selected patient
                 client.request("/ImagingStudy/" + specificImagingStudyId)
                 // Reject if no ImagingStudy are found
@@ -37,7 +37,7 @@
                     }
                     return data;
                 })
-                // Render the current imaging studies 3204399 (or any error)
+                // Render the current imaging studies 3204683 (or any error)
                 .then(
                     function(imgstudy) {
                         document.getElementById("imagingstudy").innerText = JSON.stringify(imgstudy, null, 4);
