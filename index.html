@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -82,4 +82,75 @@
             }).catch(console.error);
         </script>
     </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>SMART on FHIR ImagingStudy Query</title>
+    <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { font-size: 14px; margin: 5px 0; padding: 5px; }
+        #output { font-family: Monaco, monospace; white-space: pre; font-size: 13px; height: 40vh; overflow: scroll; border: 1px solid #CCC; padding: 5px; }
+    </style>
+</head>
+<body>
+
+<h2>查詢 Patient 及 ImagingStudy</h2>
+
+<label for="identifier">輸入身分證字號：</label>
+<input id="identifier" placeholder="C111111316" />
+<button id="queryBtn">查詢</button>
+
+<h4>結果</h4>
+<div id="output">等待查詢...</div>
+
+<script>
+FHIR.oauth2.ready().then(function(client) {
+
+    document.getElementById("queryBtn").onclick = async function() {
+        const output = document.getElementById("output");
+        output.innerText = "查詢中…";
+
+        const identifier = document.getElementById("identifier").value.trim();
+        if (!identifier) {
+            output.innerText = "請輸入身分證字號";
+            return;
+        }
+
+        try {
+            // 1️⃣ 查 Patient
+            const patientBundle = await client.request(`Patient?identifier=${identifier}`);
+            if (!patientBundle.entry || patientBundle.entry.length === 0) {
+                throw new Error("找不到此身分證字號的患者");
+            }
+
+            const patient = patientBundle.entry[0].resource;
+            const patientId = patient.id;
+
+            let resultText = "Patient:\n" + JSON.stringify(patient, null, 4) + "\n\n";
+
+            // 2️⃣ 查 ImagingStudy
+            const imagingBundle = await client.request(`ImagingStudy?patient=${patientId}`);
+            if (!imagingBundle.entry || imagingBundle.entry.length === 0) {
+                resultText += "找不到此患者的 ImagingStudy\n";
+            } else {
+                const imagingStudy = imagingBundle.entry.map(e => e.resource);
+                resultText += "ImagingStudy:\n" + JSON.stringify(imagingStudy, null, 4) + "\n";
+            }
+
+            output.innerText = resultText;
+
+        } catch (err) {
+            output.innerText = "錯誤: " + err.message;
+            console.error(err);
+        }
+    };
+
+});
+</script>
+
+</body>
 </html>
